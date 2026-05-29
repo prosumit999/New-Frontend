@@ -182,10 +182,7 @@ export function exportStatementPDF(
   const pageWidth = doc.internal.pageSize.getWidth();
   const now = new Date();
 
-  // ── Header Banner ──────────────────────────────────────────────────────────
-  doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, pageWidth, 22, 'F');
-  doc.setTextColor(255, 255, 255);
+  // ── Header ─────────────────────────────────────────────────────────────────
   const instName = branding?.institution?.name || 'MICROFINANCE INSTITUTION';
   const instReg = branding?.institution?.registrationNumber ? `Reg: ${branding.institution.registrationNumber}` : '';
   const instPhone = branding?.institution?.contactPhone ? `Ph: ${branding.institution.contactPhone}` : '';
@@ -197,7 +194,6 @@ export function exportStatementPDF(
     branding?.institution?.address?.zipCode,
   ].filter(Boolean);
   const instAddr = addrParts.length > 0 ? addrParts.join(', ') : '';
-
   const bottomHeaderLine = [instReg, instPhone, instEmail].filter(Boolean).join('  |  ');
 
   // ── Logo (if available) ──
@@ -210,56 +206,64 @@ export function exportStatementPDF(
     } catch { /* skip logo if load fails */ }
   }
 
+  doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(14);
   doc.text(sanitizePdfText(instName).toUpperCase(), textStartX, 9);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.setTextColor(200, 200, 200);
-  doc.text(sanitizePdfText(bottomHeaderLine), textStartX, 15);
+  doc.setTextColor(80, 80, 80);
+  if (bottomHeaderLine) doc.text(sanitizePdfText(bottomHeaderLine), textStartX, 15);
   if (instAddr) doc.text(sanitizePdfText(instAddr), textStartX, 19.5);
 
-  // ── Sub-header title bar ───────────────────────────────────────────────────
-  doc.setFillColor(60, 60, 60);
-  doc.rect(0, 22, pageWidth, 9, 'F');
-  doc.setTextColor(255, 255, 255);
+  // ── Divider ──
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.4);
+  doc.line(10, 23, pageWidth - 10, 23);
+
+  // ── Report title ──
+  doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text('ACCOUNT STATEMENT', 10, 28.5);
+  doc.setFontSize(10);
+  doc.text('ACCOUNT STATEMENT', 10, 30);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.text(`Generated: ${sanitizePdfText(fmtDateTime(now.toISOString()))}`, pageWidth - 10, 28.5, { align: 'right' });
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Generated: ${sanitizePdfText(fmtDateTime(now.toISOString()))}`, pageWidth - 10, 30, { align: 'right' });
+
+  doc.setDrawColor(180, 180, 180);
+  doc.line(10, 34, pageWidth - 10, 34);
 
   // ── Account Info Box ───────────────────────────────────────────────────────
-  doc.setFillColor(245, 245, 245);
+  doc.setFillColor(255, 255, 255);
   doc.setDrawColor(180, 180, 180);
-  doc.roundedRect(10, 34, pageWidth - 20, 28, 2, 2, 'FD');
+  doc.roundedRect(10, 37, pageWidth - 20, 28, 2, 2, 'FD');
 
   doc.setTextColor(80, 80, 80);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.text('ACCOUNT NUMBER', 14, 40);
+  doc.text('ACCOUNT NUMBER', 14, 43);
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text(account.accountNumber ?? '—', 14, 46);
+  doc.text(account.accountNumber ?? '—', 14, 49);
 
   doc.setTextColor(80, 80, 80);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  doc.text('CURRENT BALANCE', pageWidth / 2, 40);
+  doc.text('CURRENT BALANCE', pageWidth / 2, 43);
   doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text(`Rs. ${fmt(account.balanceInPaise)}`, pageWidth / 2, 46);
+  doc.text(`Rs. ${fmt(account.balanceInPaise)}`, pageWidth / 2, 49);
 
   doc.setTextColor(80, 80, 80);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   const infoLine1 = `Customer: ${account.customer?.name ?? '—'}  |  Code: ${account.customer?.customerCode ?? '—'}  |  Phone: ${account.customer?.phone ?? '—'}`;
   const infoLine2 = `Status: ${(account.status ?? '').toUpperCase()}  |  Opened: ${fmtDate(account.openedAt ?? account.createdAt)}  |  Period: ${dateRange?.from ? fmtDate(dateRange.from) : 'All'} – ${dateRange?.to ? fmtDate(dateRange.to) : 'Present'}`;
-  doc.text(sanitizePdfText(infoLine1), 14, 54);
-  doc.text(sanitizePdfText(infoLine2), 14, 59);
+  doc.text(sanitizePdfText(infoLine1), 14, 57);
+  doc.text(sanitizePdfText(infoLine2), 14, 62);
 
   // ── Build table rows ───────────────────────────────────────────────────────
   // API returns transactions newest-first. For a proper statement, we read chronologically (oldest-first).
@@ -309,7 +313,7 @@ export function exportStatementPDF(
 
   // ── AutoTable with per-cell color callbacks ────────────────────────────────
   autoTable(doc, {
-    startY: 65,
+    startY: 68,
     head: [['Date', 'Txn Reference', 'Account Ref', 'Narration', 'Debit (Dr)', 'Credit (Cr)', 'Bal. After', 'By']],
     body: tableBody.length > 0
       ? tableBody
@@ -318,17 +322,19 @@ export function exportStatementPDF(
       fontSize: 8,
       cellPadding: 2.5,
       textColor: [0, 0, 0],
-      lineColor: [180, 180, 180],
+      lineColor: [200, 200, 200],
       lineWidth: 0.2,
     },
     headStyles: {
-      fillColor: [0, 0, 0],
-      textColor: [255, 255, 255],
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
       fontStyle: 'bold',
       fontSize: 8.5,
+      lineColor: [150, 150, 150],
+      lineWidth: 0.3,
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245],
+      fillColor: [248, 248, 248],
     },
     columnStyles: {
       0: { cellWidth: 18 },          // Date
@@ -388,7 +394,7 @@ export function exportStatementPDF(
       .filter((t) => !isCreditTransaction(t.type ?? '', accountType))
       .reduce((s, t) => s + (t.amountInPaise ?? 0), 0);
 
-    doc.setFillColor(240, 240, 240);
+    doc.setFillColor(255, 255, 255);
     doc.setDrawColor(180, 180, 180);
     doc.roundedRect(10, finalY, pageWidth - 20, 12, 1, 1, 'FD');
 

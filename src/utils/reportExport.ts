@@ -100,11 +100,6 @@ function drawPageHeader(
     ? `Ph: ${branding.institution.contactPhone}` : '';
   const addrLine = buildAddressLine(branding);
 
-  // ── Black header bar ──
-  doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, pageWidth, 26, 'F');
-  doc.setTextColor(255, 255, 255);
-
   // ── Logo (if available) ──
   const logoUrl = branding?.institution?.logoUrl || '';
   let textStartX = 10;
@@ -115,31 +110,41 @@ function drawPageHeader(
     } catch { /* skip logo if load fails */ }
   }
 
+  // ── Institution name ──
+  doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
+  doc.setFontSize(14);
   doc.text(instName.toUpperCase(), textStartX, 10);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(200, 200, 200);
+  doc.setFontSize(7);
+  doc.setTextColor(80, 80, 80);
   const infoLine = [regNum, phone].filter(Boolean).join('  |  ');
-  doc.text(infoLine, textStartX, 16.5);
-  if (addrLine) doc.text(addrLine, textStartX, 21.5);
+  if (infoLine) doc.text(infoLine, textStartX, 16);
+  if (addrLine) doc.text(addrLine, textStartX, 21);
 
-  // ── Sub-title bar ──
-  doc.setFillColor(60, 60, 60);
-  doc.rect(0, 26, pageWidth, 11, 'F');
-  doc.setTextColor(255, 255, 255);
+  // ── Divider line ──
+  doc.setDrawColor(180, 180, 180);
+  doc.setLineWidth(0.4);
+  doc.line(10, 25, pageWidth - 10, 25);
+
+  // ── Report title ──
+  doc.setTextColor(0, 0, 0);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text(sanitizePdfText(reportTitle).toUpperCase(), 10, 33.5);
+  doc.setFontSize(10);
+  doc.text(sanitizePdfText(reportTitle).toUpperCase(), 10, 32);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
-  if (reportSubtitle) doc.text(sanitizePdfText(reportSubtitle), 10, 33.5 + 5);
-  doc.text(`Generated: ${fmtDateTime(now)}`, pageWidth - 10, 33.5, { align: 'right' });
-  if (dateRange) doc.text(sanitizePdfText(dateRange), pageWidth - 10, 33.5 + 5, { align: 'right' });
+  doc.setTextColor(80, 80, 80);
+  if (reportSubtitle) doc.text(sanitizePdfText(reportSubtitle), 10, 37);
+  doc.text(`Generated: ${fmtDateTime(now)}`, pageWidth - 10, 32, { align: 'right' });
+  if (dateRange) doc.text(sanitizePdfText(dateRange), pageWidth - 10, 37, { align: 'right' });
 
-  return 42; // Y position after header
+  // ── Second divider ──
+  doc.setDrawColor(180, 180, 180);
+  doc.line(10, 40, pageWidth - 10, 40);
+
+  return 44; // Y position after header
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -186,13 +191,14 @@ export function exportReportPDF(options: {
     body: body.length > 0 ? body : [columns.map(() => '—')],
     styles: {
       fontSize: 8, cellPadding: 2.5,
-      textColor: [0, 0, 0], lineColor: [180, 180, 180], lineWidth: 0.2,
+      textColor: [0, 0, 0], lineColor: [200, 200, 200], lineWidth: 0.2,
     },
     headStyles: {
-      fillColor: [0, 0, 0], textColor: [255, 255, 255],
+      fillColor: [255, 255, 255], textColor: [0, 0, 0],
       fontStyle: 'bold', fontSize: 8.5,
+      lineColor: [150, 150, 150], lineWidth: 0.3,
     },
-    alternateRowStyles: { fillColor: [245, 245, 245] },
+    alternateRowStyles: { fillColor: [248, 248, 248] },
     columnStyles: colStyles,
     margin: { left: 10, right: 10 },
     didDrawPage: (data) => {
@@ -217,7 +223,7 @@ export function exportReportPDF(options: {
   if (summary.length > 0) {
     const finalY = (doc as any).lastAutoTable.finalY + 6;
     if (finalY < pageHeight - 35) {
-      doc.setFillColor(240, 240, 240);
+      doc.setFillColor(255, 255, 255);
       doc.setDrawColor(180, 180, 180);
       doc.roundedRect(10, finalY, pageWidth - 20, 14, 1, 1, 'FD');
       doc.setFont('helvetica', 'bold');

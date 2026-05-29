@@ -85,31 +85,34 @@ function exportPDF(collections: any[], fromDate: string, toDate: string, agentNa
   const instName = branding?.institution?.name || 'MICROFINANCE INSTITUTION';
   const totalAmt = collections.reduce((s, c) => s + (c.isReversed ? 0 : c.amountInPaise ?? 0), 0);
 
-  // Black header
-  doc.setFillColor(0, 0, 0);
-  doc.rect(0, 0, pw, 22, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
+  // Institution name
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
   doc.text(instName.toUpperCase(), 10, 10);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.setTextColor(200, 200, 200);
+  doc.setTextColor(80, 80, 80);
   const sub = [
     branding?.institution?.registrationNumber && `Reg: ${branding.institution.registrationNumber}`,
     branding?.institution?.contactPhone && `Ph: ${branding.institution.contactPhone}`,
   ].filter(Boolean).join('  |  ');
-  if (sub) doc.text(sub, 10, 17);
+  if (sub) doc.text(sub, 10, 16);
 
-  // Sub-header
-  doc.setFillColor(60, 60, 60);
-  doc.rect(0, 22, pw, 9, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
-  doc.text('PIGMY COLLECTION REPORT', 10, 28.5);
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
-  doc.text(`Generated: ${fmtNow()}`, pw - 10, 28.5, { align: 'right' });
+  // Divider
+  doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.4);
+  doc.line(10, 20, pw - 10, 20);
+
+  // Report title
+  doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+  doc.text('PIGMY COLLECTION REPORT', 10, 27);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(80, 80, 80);
+  doc.text(`Generated: ${fmtNow()}`, pw - 10, 27, { align: 'right' });
+
+  doc.setDrawColor(180, 180, 180);
+  doc.line(10, 31, pw - 10, 31);
 
   // Info box
-  doc.setFillColor(245, 245, 245); doc.setDrawColor(180, 180, 180);
+  doc.setFillColor(255, 255, 255); doc.setDrawColor(180, 180, 180);
   doc.roundedRect(10, 34, pw - 20, 14, 2, 2, 'FD');
   doc.setTextColor(80, 80, 80); doc.setFont('helvetica', 'normal'); doc.setFontSize(7);
   doc.text('PERIOD', 14, 40); doc.text('AGENT', 80, 40); doc.text('RECORDS', 160, 40); doc.text('TOTAL COLLECTED', 200, 40);
@@ -138,9 +141,9 @@ function exportPDF(collections: any[], fromDate: string, toDate: string, agentNa
     startY: 52,
     head: [['#', 'Receipt No.', 'Date', 'Customer', 'Pigmy Account', 'Agent', 'Amount', 'Bal. After', 'Status']],
     body: body.length > 0 ? body : [['—', '—', '—', 'No transactions found', '', '', '', '', '']],
-    styles: { fontSize: 7, cellPadding: 2, textColor: [0, 0, 0], lineColor: [180, 180, 180], lineWidth: 0.2 },
-    headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7.5 },
-    alternateRowStyles: { fillColor: [245, 245, 245] },
+    styles: { fontSize: 7, cellPadding: 2, textColor: [0, 0, 0], lineColor: [200, 200, 200], lineWidth: 0.2 },
+    headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7.5, lineColor: [150, 150, 150], lineWidth: 0.3 },
+    alternateRowStyles: { fillColor: [248, 248, 248] },
     columnStyles: {
       0: { cellWidth: 8, halign: 'center' },
       1: { cellWidth: 32 },
@@ -174,7 +177,7 @@ function exportPDF(collections: any[], fromDate: string, toDate: string, agentNa
   const finalY = (doc as any).lastAutoTable.finalY + 5;
   const ph = doc.internal.pageSize.getHeight();
   if (finalY < ph - 20) {
-    doc.setFillColor(240, 240, 240); doc.setDrawColor(180, 180, 180);
+    doc.setFillColor(255, 255, 255); doc.setDrawColor(180, 180, 180);
     doc.roundedRect(10, finalY, pw - 20, 10, 1, 1, 'FD');
     doc.setFont('helvetica', 'bold'); doc.setFontSize(7); doc.setTextColor(0, 0, 0);
     doc.text(`Total Records: ${collections.length}`, 14, finalY + 6.5);

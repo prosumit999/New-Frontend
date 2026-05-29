@@ -71,13 +71,15 @@ export async function exportTableToPdf(
         overflow: 'linebreak',
       },
       headStyles: {
-        fillColor: [0, 0, 0],
-        textColor: [255, 255, 255],
+        fillColor: [255, 255, 255],
+        textColor: [0, 0, 0],
         fontSize: 8,
         fontStyle: 'bold',
+        lineColor: [150, 150, 150],
+        lineWidth: 0.3,
       },
       alternateRowStyles: {
-        fillColor: [245, 245, 245],
+        fillColor: [248, 248, 248],
       },
       margin: { top: 28, left: 14, right: 14 },
     });

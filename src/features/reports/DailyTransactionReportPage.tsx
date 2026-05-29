@@ -224,7 +224,7 @@ async function exportPDF(groups: Record<string, any[]>, date: string, institutio
         ...tableRows,
         ['', '', '', '', '', '', 'Type Total ->', typeDebit.toFixed(2), typeCredit.toFixed(2), '', '', '', ''],
       ],
-      headStyles: { fillColor: [0, 0, 0], fontSize: 6.5, textColor: 255 },
+      headStyles: { fillColor: [255, 255, 255], fontSize: 6.5, textColor: [0, 0, 0], fontStyle: 'bold', lineColor: [150, 150, 150], lineWidth: 0.3 },
       bodyStyles: { fontSize: 6 },
       columnStyles: {
         0: { cellWidth: 6 },
@@ -244,7 +244,7 @@ async function exportPDF(groups: Record<string, any[]>, date: string, institutio
       didParseCell: (data) => {
         if (data.row.index === tableRows.length) {
           data.cell.styles.fontStyle = 'bold';
-          data.cell.styles.fillColor = [240, 240, 240];
+          data.cell.styles.fillColor = [248, 248, 248];
         }
       },
       margin: { left: 14, right: 14 },
