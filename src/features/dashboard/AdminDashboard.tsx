@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { reportApi } from '../../api/report.api';
-import { dayControlApi } from '../../api/dayControl.api';
+import { useBusinessDate } from '../../hooks/useBusinessDate';
 import { useAuthStore } from '../../store/auth.store';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -212,13 +212,6 @@ export default function AdminDashboard() {
     staleTime: 15_000,
   });
 
-  // ── Fetch day status ─────────────────────────────────────────────────────
-  const { data: dayRes } = useQuery({
-    queryKey: ['day-status'],
-    queryFn: () => dayControlApi.getStatus(),
-    refetchInterval: 60_000,
-  });
-
   // ── Fetch cash & assets ──────────────────────────────────────────────────
   const { data: cashRes } = useQuery({
     queryKey: ['cash-position'],
@@ -235,10 +228,10 @@ export default function AdminDashboard() {
   const [showCash, setShowCash] = useState(false);
 
   const d: DashboardData | null = dashRes?.data?.data || null;
-  const dayStatus = dayRes?.data?.data;
-  const isDayOpen = dayStatus?.isDayOpen ?? false;
-  const businessDate = dayStatus?.currentBusinessDate
-    ? new Date(dayStatus.currentBusinessDate).toLocaleDateString('en-IN', {
+  // Use the shared business date hook (single source of truth)
+  const { isOpen: isDayOpen, businessDate: businessDateISO } = useBusinessDate();
+  const businessDate = businessDateISO
+    ? new Date(businessDateISO).toLocaleDateString('en-IN', {
       weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
     })
     : '—';
